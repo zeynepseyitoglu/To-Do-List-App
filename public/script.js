@@ -78,6 +78,8 @@ let timerActive = false;
 let isFocusTime = true; 
 let timerInterval;
 let sessionCount;
+let timeValue;
+let breakValue;
 
 function breakChange(){
     isFocusTime = false;
@@ -92,10 +94,12 @@ function focusChange(){
 function newTime() {
   let inputFocus = document.getElementById('pom-time');
   let inputBreak = document.getElementById('br-time');
-
   // turn the input values to integer
   let focusNew = parseInt(inputFocus.value, 10);
   let breakNew = parseInt(inputBreak.value, 10);
+
+  timeValue = focusNew;
+  breakValue = breakNew;
 
   if (isNaN(focusNew) || isNaN(breakNew) || focusNew <= 0 || breakNew <= 0) {
     window.alert('Work and break times must be positive numbers');
@@ -118,6 +122,9 @@ function newTime() {
 function reset() {
     clearInterval(timerInterval);
     timerActive = false;
+
+    focusTime.hours = Math.floor(timeValue/60); focusTime.minutes = timeValue%60; focusTime.seconds = 0;
+    breakTime.hours = Math.floor(breakValue/60); breakTime.minutes = breakValue%60; breakTime.seconds = 0;
  
     let timerFormat; 
     if(isFocusTime){timerFormat=focusTime} else {timerFormat=breakTime}; 
@@ -130,16 +137,25 @@ function reset() {
     }
 
     timerBox.textContent = timerDisplay;
-    saveTimerStateToLocalStorage();
+    saveTimer();
   }
 
   function toDefault(){
+    let focusDefault = document.getElementById('pom-time').value;
+    let breakDefault = document.getElementById('br-time').value;
+    
+    focusDefault = 25;
+    breakDefault = 5;
+
+    timeValue = focusDefault;
+    breakValue = breakDefault;
+
     window.alert("A brand new timer")
-    document.getElementById('pom-time').value = 25;
-    document.getElementById('br-time').value = 5;
+    
     focusTime = {hours:0, minutes: 25, seconds:0};
     breakTime = {hours:0, minutes: 5, seconds:0};
     sessionCount = 0;
+  
     sessionText.textContent= `Nº${sessionCount}`;
     reset();
   }
@@ -150,9 +166,9 @@ function reset() {
       let totalTime;
 
       if (isFocusTime) {
-        totalTime = parseInt(focusTime.hours*3600 )+ parseInt(focusTime.minutes*60) + parseInt(focusTime.seconds) - 1;
+        totalTime = parseInt(focusTime.hours*3600 )+ parseInt(focusTime.minutes*60) + parseInt(focusTime.seconds) -1;
       } else {
-        totalTime = parseInt(breakTime.hours*3600 )+ parseInt(breakTime.minutes*60) + parseInt(breakTime.seconds) - 1;
+        totalTime = parseInt(breakTime.hours*3600 )+ parseInt(breakTime.minutes*60) + parseInt(breakTime.seconds) -1;
       } 
       // set interval that updates every second
       timerInterval = setInterval(() => {
@@ -163,7 +179,7 @@ function reset() {
           if (isFocusTime) {
             sessionCount++;
             sessionText.textContent = `Nº${sessionCount}`;
-           newTime();
+            reset();
           }
         } else {
           
@@ -201,7 +217,9 @@ function reset() {
       focusTime = timer.focusTime;
       breakTime = timer.breakTime;
       isFocusTime = timer.isFocusTime;
-      sessionCount = timer.sessionCount;
+      sessionCount = timer.sessionCount || 0;
+      timeValue = timer.timeValue || 25;
+      breakValue = timer.breakValue || 5;
   
       if (timer.timerActive) {
         startTimer();
@@ -215,7 +233,9 @@ function reset() {
       breakTime,
       isFocusTime,
       sessionCount,
-      timerActive
+      timerActive,
+      timeValue,
+      breakValue
     };
   
     localStorage.setItem('pomodoro', JSON.stringify(timer));
@@ -230,7 +250,8 @@ function reset() {
     focusTime = timer.focusTime;
     breakTime = timer.breakTime;
     sessionCount = timer.sessionCount;
-
+    timeValue = timer.timeValue;
+    breakValue = timer.breakValue;
     sessionText.textContent = `Nº${sessionCount}`;
 
     let timerFormat; 
@@ -244,7 +265,8 @@ function reset() {
     }
 
     timerBox.textContent = timerDisplay;
-
+    document.getElementById('pom-time').value = timeValue;
+    document.getElementById('br-time').value = breakValue;
 
   });
   
