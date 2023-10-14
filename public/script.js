@@ -1,20 +1,34 @@
+let isInvisible;
+
 //Event listeners of the general buttons.
 let listButton = document.querySelector("#list-box");
 listButton.addEventListener("click", () => {
     //opens and closes the to-do list by click on the list button
-    document.querySelector(".big-container").classList.toggle("invisible");
+    document.querySelector(".big-container").classList.remove("invisible");
 });
 
 let timerButton = document.querySelector("#timer-box");
 timerButton.addEventListener("click", () => {
     //opens and closes the timer by click on the timer button
-    document.querySelector(".little-container").classList.toggle("invisible");
+    document.querySelector(".little-container").classList.remove("invisible");
+    if(!document.querySelector(".little-container").classList.contains("invisible")){
+      isInvisible = false;
+      saveBoxState();
+    } else {
+      isInvisible = true;
+    }
 });
 
 let closeBtnTimer = document.querySelector(".close-timer");
 closeBtnTimer.addEventListener("click", () => {
     //closes the timer on close button click
     document.querySelector(".little-container").classList.add("invisible");
+    if(!document.querySelector(".little-container").classList.contains("invisible")){
+      isInvisible = false;
+      saveBoxState();
+    } else {
+      isInvisible = true;
+    }
 });
 
 let closeBtnList = document.querySelector(".close-list");
@@ -28,6 +42,8 @@ settingButton.addEventListener("click", () => {
     //opens and closes the timer settings when clicked
     document.querySelector(".timer-settings-box").classList.toggle("invisible");
 })
+
+
 
 const listElems = document.querySelectorAll('.checkNoDelete');
 const EMPTY_SQUARE = '/images/check-square.svg';
@@ -242,6 +258,7 @@ function reset() {
   }
 
   window.addEventListener('beforeunload', function () {
+    saveBoxState();
     saveTimer();
   });
 
@@ -268,6 +285,20 @@ function reset() {
     document.getElementById('pom-time').value = timeValue;
     document.getElementById('br-time').value = breakValue;
 
+    const state = JSON.parse(localStorage.getItem('boxState'));
+    isInvisible = state.isInvisible;
+    if(!isInvisible){
+      document.querySelector(".little-container").classList.remove("invisible");
+    }
+
   });
+
+  const saveBoxState = () => {
+    const state = {
+      isInvisible
+    };
+  
+    localStorage.setItem("boxState", JSON.stringify(state));
+  }
   
   handleRefresh();
