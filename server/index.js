@@ -5,7 +5,8 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose"
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
+//Connecting to the local database
+mongoose.connect("mongodb://localhost:27017", {useNewUrlParser: true});
 
 const app = express();
 const port = 3000;
@@ -15,6 +16,7 @@ const itemsSchema = {
     name: String
   };
 
+//create new model for tasks
 const Item = mongoose.model("Item", itemsSchema);
 
 app.set('view engine', 'ejs');
@@ -35,18 +37,25 @@ app.get("/", async (req, res) => {
       res.status(500).send("Items cannot be found");
     }
   });
-  
-app.post("/create-task", (req, res) => {
+ 
+//route for creating tasks
+app.post("/create-task", async (req, res) => {
+ try{ 
   let taskText = req.body["newTask"];
 
     const itemToAdd = new Item({
         name: taskText
     })
-    itemToAdd.save();
+   await itemToAdd.save();
  
   res.redirect("/");
+} catch (err) {
+    console.log(err);
+    res.status(500).send("Something went wrong.")
+  }
 });
 
+//route for deleting tasks
 app.post("/delete", async (req, res) => {
     try {
         const idFind = req.body["index"]; 
@@ -56,10 +65,11 @@ app.post("/delete", async (req, res) => {
     } 
     catch (err) {
         console.log(err);
-        res.status(500).send(err);
+        res.status(500).send('Something went wrong.');
     } 
 })
 
+//route for updating tasks
 app.post("/update", async (req, res) => {
   try {
       const idFind = req.body["index"]; 
@@ -70,7 +80,7 @@ app.post("/update", async (req, res) => {
   } 
   catch (err) {
       console.log(err);
-      res.status(500).send(err);
+      res.status(500).send('There has been a mistake');
   } 
 })
 

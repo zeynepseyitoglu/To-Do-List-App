@@ -51,6 +51,7 @@ const CHECKED_SQUARE = '/images/check-square-fill.svg';
 
 
 listElems.forEach((elem) => {
+  //Iterate through the listElems array and add event listener to each element
   const checkIcon = elem.querySelector('.check');
   checkIcon.addEventListener('click', () => {
     // Toggle line-through for the text
@@ -58,8 +59,8 @@ listElems.forEach((elem) => {
     textElement.classList.toggle('lined');
 
     // Toggle image source for the check icon
-    //const checkIcon = elem.querySelector('.check');
     const currentSrc = checkIcon.getAttribute('src');
+    //check the source of the svg to change it on click
     if (currentSrc === EMPTY_SQUARE) {
         checkIcon.setAttribute('src', CHECKED_SQUARE);
       } else if (currentSrc === CHECKED_SQUARE) {
@@ -70,14 +71,16 @@ listElems.forEach((elem) => {
 
 
 
-//pomodoro-timer event listeners
+//pomodoro-timer buttons and elements
 let timerOKBtn = document.getElementById("ok");
 let timerStartBtn = document.getElementById("strt");
 let breakBtn = document.getElementById("break");
 let focusBtn = document.getElementById("focus");
 let defaultBtn = document.getElementById("defTime");
 let sessionText = document.getElementById("sessionNum");
+let timerBox = document.getElementById("showTime");
 
+//pomodoro-timer event listeners
 timerOKBtn.addEventListener("click", newTime);
 breakBtn.addEventListener("click", breakChange);
 focusBtn.addEventListener("click", focusChange);
@@ -89,7 +92,6 @@ timerStartBtn.addEventListener("click", startTimer);
 let audio = new Audio("https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg")
 let focusTime; 
 let breakTime; 
-let timerBox = document.getElementById("showTime");
 let timerActive = false;
 let isFocusTime = true; 
 let timerInterval;
@@ -97,16 +99,19 @@ let sessionCount;
 let timeValue;
 let breakValue;
 
+//changes the timer to the break time
 function breakChange(){
     isFocusTime = false;
     newTime();
 }
 
+//changes the timer to the focus time
 function focusChange(){
     isFocusTime = true;
     newTime();
 }
 
+//get user break and focus time values 
 function newTime() {
   let inputFocus = document.getElementById('pom-time');
   let inputBreak = document.getElementById('br-time');
@@ -117,6 +122,13 @@ function newTime() {
   timeValue = focusNew;
   breakValue = breakNew;
 
+  //check that the times are no longer than 10 hours
+  if(focusNew >= 600 || breakNew >= 600){
+    window.alert('That is too many hours');
+    return;
+  }
+
+  //check for faulty values
   if (isNaN(focusNew) || isNaN(breakNew) || focusNew <= 0 || breakNew <= 0) {
     window.alert('Work and break times must be positive numbers');
     return;  
@@ -135,10 +147,12 @@ function newTime() {
   reset();
 }
 
+//reset the timer
 function reset() {
     clearInterval(timerInterval);
     timerActive = false;
 
+    //Update focusTime and breakTime values
     focusTime.hours = Math.floor(timeValue/60); focusTime.minutes = timeValue%60; focusTime.seconds = 0;
     breakTime.hours = Math.floor(breakValue/60); breakTime.minutes = breakValue%60; breakTime.seconds = 0;
  
@@ -146,6 +160,7 @@ function reset() {
     if(isFocusTime){timerFormat=focusTime} else {timerFormat=breakTime}; 
 
     let timerDisplay; 
+    //Format the timers 
     if(timerFormat.hours > 0){
         timerDisplay = `${timerFormat.hours.toString().padStart(2, '0')}:${timerFormat.minutes.toString().padStart(2, '0')}:${timerFormat.seconds.toString().padStart(2, '0')}`
     } else {
@@ -156,6 +171,7 @@ function reset() {
     saveTimer();
   }
 
+  //restore timer properties to default
   function toDefault(){
     let focusDefault = document.getElementById('pom-time').value;
     let breakDefault = document.getElementById('br-time').value;
@@ -176,7 +192,9 @@ function reset() {
     reset();
   }
 
+  //start the timer countdown
   function startTimer() {
+    //check if the timer is active
     if (!timerActive) {
       timerActive = true;
       let totalTime;
@@ -192,13 +210,14 @@ function reset() {
           audio.play();
           clearInterval(timerInterval);
           timerActive = false;
+          //update session count if the session was a focus session
           if (isFocusTime) {
             sessionCount++;
             sessionText.textContent = `Nº${sessionCount}`;
-            reset();
           }
+          reset();
         } else {
-          
+          //update the remaning seconds and timer display every second
           let hours = Math.floor(totalTime / 3600);
           let minutes = Math.floor((totalTime % 3600) / 60);
           let seconds = totalTime % 60;
@@ -225,6 +244,7 @@ function reset() {
     }
   }
 
+  //handle redirections to keep using the timer from its last state
   function handleRefresh() {
     
     const timer = JSON.parse(localStorage.getItem('pomodoro'));
@@ -236,13 +256,15 @@ function reset() {
       sessionCount = timer.sessionCount || 0;
       timeValue = timer.timeValue || 25;
       breakValue = timer.breakValue || 5;
-  
+      
+      //start the timer if it was active before the redirection
       if (timer.timerActive) {
         startTimer();
       }
     }
   }
  
+  //save timer properties to local storage
   function saveTimer() {
     const timer = {
       focusTime,
@@ -257,11 +279,13 @@ function reset() {
     localStorage.setItem('pomodoro', JSON.stringify(timer));
   }
 
+  //save the latest state of the properties before unload
   window.addEventListener('beforeunload', function () {
     saveBoxState();
     saveTimer();
   });
 
+  //assign saved values upon loading
   window.addEventListener('load', function() {
     const timer = JSON.parse(localStorage.getItem('pomodoro'));
     focusTime = timer.focusTime;
@@ -293,6 +317,7 @@ function reset() {
 
   });
 
+  //save the visibility state of the timer box
   const saveBoxState = () => {
     const state = {
       isInvisible
