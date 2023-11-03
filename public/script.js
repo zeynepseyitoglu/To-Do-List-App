@@ -1,5 +1,5 @@
 let isInvisible;
-
+let isCompleted;
 //Event listeners of the general buttons.
 let listButton = document.querySelector("#list-box");
 listButton.addEventListener("click", () => {
@@ -57,7 +57,6 @@ listElems.forEach((elem) => {
     // Toggle line-through for the text
     const textElement = elem.querySelector('.textie');
     textElement.classList.toggle('lined');
-
     // Toggle image source for the check icon
     const currentSrc = checkIcon.getAttribute('src');
     //check the source of the svg to change it on click
@@ -315,7 +314,9 @@ function reset() {
       document.querySelector(".little-container").classList.remove("invisible");
     }
     //iscompleted ekle
-  });
+    
+    });
+ 
 
   //save the visibility state of the timer box
   const saveBoxState = () => {
@@ -324,6 +325,14 @@ function reset() {
     };
   
     localStorage.setItem("boxState", JSON.stringify(state));
+  }
+
+  const saveCheckedState = () => {
+    const state = {
+      isCompleted
+    };
+  
+    localStorage.setItem("checkedState", JSON.stringify(state));
   }
   
   handleRefresh();

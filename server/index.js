@@ -135,12 +135,12 @@ app.post("/update", async (req, res) => {
 
 app.post("/register", function(req, res){
 
-  User.register({username: req.body.username}, req.body.password, function(err, user){
+  User.register({username: req.body.username}, req.body.password, (err, user) => {
     if (err) {
       console.log(err);
       res.redirect("/register");
     } else {
-      passport.authenticate("local")(req, res, function(){
+      passport.authenticate("local")(req, res, () => {
         res.redirect("/index");
       });
     }
@@ -148,25 +148,24 @@ app.post("/register", function(req, res){
 
 });
 
-app.post("/login", function(req, res){
-
-  const user = new User({
-    username: req.body.username,
-    password: req.body.password
-  });
-
-  req.login(user, function(err){
-   
+app.post("/login", function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
     if (err) {
       console.log(err);
-      res.redirect("/login")
-    } else {
-      passport.authenticate("local")(req, res, function(){
-        res.redirect("/index");
-      });
+      return res.redirect('/login');
     }
-  });
-
+    if (!user) {
+      console.log('There was a mistake in the username or the password');
+      return res.redirect('/login');
+    }
+    req.logIn(user, function(err) {
+      if (err) {
+        console.log(err);
+        return res.redirect('/login');
+      }
+      return res.redirect('/index');
+    });
+  })(req, res, next);
 });
 
 app.get("/logout", (req, res) => {
