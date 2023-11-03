@@ -25,8 +25,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 const itemsSchema = new mongoose.Schema({
-    name: String
+    name: String,
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }
   });
 
 const userSchema = new mongoose.Schema({
@@ -55,15 +60,21 @@ app.listen(port, (req, res) => {
 
 app.get("/", async (req, res) => {
   res.sendFile(path.join(__dirname, "..", "/views", "/main_page.html"));
+  });
 
-   /*  try {
-      const found = await Item.find().exec();
+  app.get("/index", async(req, res) => {
+   if(req.isAuthenticated()){
+    try {
+      const user = req.user;
+      const found = await Item.find({ owner: user._id }).exec();
       res.render(path.join(__dirname, "..", "/views", "/index.ejs"), { list: found });
     } catch (err) {
       console.log(err);
       res.status(500).send("Items cannot be found");
-    } */
-  });
+    } }  else {
+        res.redirect("/");
+    }
+  })
 
   app.get("/register", async(req, res) => {
     res.sendFile(path.join(__dirname, "..", "/views", "/register.html"));
@@ -76,14 +87,16 @@ app.get("/", async (req, res) => {
 //route for creating tasks
 app.post("/create-task", async (req, res) => {
  try{ 
+  const user = req.user;
   let taskText = req.body["newTask"];
 
     const itemToAdd = new Item({
-        name: taskText
+        name: taskText,
+        owner: user._id
     })
    await itemToAdd.save();
  
-  res.redirect("/");
+  res.redirect("/index");
 } catch (err) {
     console.log(err);
     res.status(500).send("Something went wrong.")
@@ -96,7 +109,7 @@ app.post("/delete", async (req, res) => {
         const idFind = req.body["index"]; 
   
         let removed = await Item.findByIdAndRemove(idFind).exec();
-        res.redirect("/"); 
+        res.redirect("/index"); 
     } 
     catch (err) {
         console.log(err);
@@ -107,11 +120,12 @@ app.post("/delete", async (req, res) => {
 //route for updating tasks
 app.post("/update", async (req, res) => {
   try {
+      const user = req.user;
       const idFind = req.body["index"]; 
       let updatedText = req.body.updateTask;
-      let taskUpdate = await Item.findByIdAndUpdate(idFind, {name: updatedText});
+      let taskUpdate = await Item.findByIdAndUpdate(idFind, {name: updatedText, owner: user._id});
       
-      res.redirect("/"); 
+      res.redirect("/index"); 
   } 
   catch (err) {
       console.log(err);
@@ -119,5 +133,45 @@ app.post("/update", async (req, res) => {
   } 
 })
 
+app.post("/register", function(req, res){
 
+  User.register({username: req.body.username}, req.body.password, function(err, user){
+    if (err) {
+      console.log(err);
+      res.redirect("/register");
+    } else {
+      passport.authenticate("local")(req, res, function(){
+        res.redirect("/index");
+      });
+    }
+  });
 
+});
+
+app.post("/login", function(req, res){
+
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password
+  });
+
+  req.login(user, function(err){
+   
+    if (err) {
+      console.log(err);
+      res.redirect("/login")
+    } else {
+      passport.authenticate("local")(req, res, function(){
+        res.redirect("/index");
+      });
+    }
+  });
+
+});
+
+app.get("/logout", (req, res) => {
+  req.logout(req.user, err => {
+    if(err) return next(err);
+    res.redirect("/");
+  });
+});

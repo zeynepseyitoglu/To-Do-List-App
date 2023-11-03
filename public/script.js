@@ -314,7 +314,7 @@ function reset() {
     if(!isInvisible){
       document.querySelector(".little-container").classList.remove("invisible");
     }
-
+    //iscompleted ekle
   });
 
   //save the visibility state of the timer box
