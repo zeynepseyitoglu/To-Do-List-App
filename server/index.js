@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
 import express from "express";
 import bodyParser from "body-parser";
 import path from "path";
@@ -8,8 +9,6 @@ import mongoose from "mongoose";
 import passport from "passport";
 import session from "express-session";
 import passportLocalMongoose from "passport-local-mongoose";
-//configure .env file
-dotenv.config();
 
 //Connecting to the local database
 mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
