@@ -1,5 +1,4 @@
 let isInvisible;
-let isCompleted;
 //Event listeners of the general buttons.
 let listButton = document.querySelector("#list-box");
 listButton.addEventListener("click", () => {
@@ -43,13 +42,13 @@ settingButton.addEventListener("click", () => {
     document.querySelector(".timer-settings-box").classList.toggle("invisible");
 })
 
-
+//------------list functions------------------------------------
 
 const listElems = document.querySelectorAll('.checkNoDelete');
 const EMPTY_SQUARE = '/images/check-square.svg';
 const CHECKED_SQUARE = '/images/check-square-fill.svg';
 
-
+//Add event listeners that add the check functionality
 listElems.forEach((elem) => {
   //Iterate through the listElems array and add event listener to each element
   const checkIcon = elem.querySelector('.check');
@@ -65,10 +64,13 @@ listElems.forEach((elem) => {
       } else if (currentSrc === CHECKED_SQUARE) {
         checkIcon.setAttribute('src', EMPTY_SQUARE);
       }
+      //save completion states of the tasks
+      saveTaskState();
   });
 });
 
 
+//-----------------------Pomodoro timer functions and elements---------------------------
 
 //pomodoro-timer buttons and elements
 let timerOKBtn = document.getElementById("ok");
@@ -98,19 +100,19 @@ let sessionCount;
 let timeValue;
 let breakValue;
 
-//changes the timer to the break time
+//Function to change the timer to the break time
 function breakChange(){
     isFocusTime = false;
     newTime();
 }
 
-//changes the timer to the focus time
+//Function to change the timer to the focus time
 function focusChange(){
     isFocusTime = true;
     newTime();
 }
 
-//get user break and focus time values 
+//Function to get user break and focus time values 
 function newTime() {
   let inputFocus = document.getElementById('pom-time');
   let inputBreak = document.getElementById('br-time');
@@ -170,7 +172,7 @@ function reset() {
     saveTimer();
   }
 
-  //restore timer properties to default
+  //Function to restore timer properties to default
   function toDefault(){
     let focusDefault = document.getElementById('pom-time').value;
     let breakDefault = document.getElementById('br-time').value;
@@ -191,7 +193,7 @@ function reset() {
     reset();
   }
 
-  //start the timer countdown
+  //Function to start the timer countdown
   function startTimer() {
     //check if the timer is active
     if (!timerActive) {
@@ -241,9 +243,10 @@ function reset() {
         }
       }, 1000);
     }
-  }
-
-  //handle redirections to keep using the timer from its last state
+  };
+//--------------------Refresh and redirect handsling functions----------------------------
+  
+//Function to handle redirections to keep using the timer from its last state
   function handleRefresh() {
     
     const timer = JSON.parse(localStorage.getItem('pomodoro'));
@@ -263,7 +266,7 @@ function reset() {
     }
   }
  
-  //save timer properties to local storage
+  //Function to save timer properties to local storage
   function saveTimer() {
     const timer = {
       focusTime,
@@ -296,7 +299,7 @@ function reset() {
 
     let timerFormat; 
     if(isFocusTime){timerFormat=focusTime} else {timerFormat=breakTime}; 
-  
+  //format timer display
     let timerDisplay; 
     if(timerFormat.hours > 0){
         timerDisplay = `${timerFormat.hours.toString().padStart(2, '0')}:${timerFormat.minutes.toString().padStart(2, '0')}:${timerFormat.seconds.toString().padStart(2, '0')}`
@@ -313,8 +316,9 @@ function reset() {
     if(!isInvisible){
       document.querySelector(".little-container").classList.remove("invisible");
     }
-    //iscompleted ekle
     
+    //Load the taskItem states every time the page loads
+    loadTaskStates();
     });
  
 
@@ -325,14 +329,32 @@ function reset() {
     };
   
     localStorage.setItem("boxState", JSON.stringify(state));
-  }
+  };
 
-  const saveCheckedState = () => {
-    const state = {
-      isCompleted
-    };
-  
-    localStorage.setItem("checkedState", JSON.stringify(state));
+  //The function that loads the tasks' completion states from localStorage
+function loadTaskStates(){
+  const taskItemsState = JSON.parse(localStorage.getItem('taskItemsState')) || [];
+  for (const elem of listElems) {
+    const taskId = elem.querySelector('input[name="index"]').value;
+    const taskItem = taskItemsState.find((item) => item.id === taskId);
+    if (taskItem && taskItem.isCompleted) {
+      const checkIcon = elem.querySelector('.check');
+      const textElement = elem.querySelector('.textie');
+      checkIcon.setAttribute('src', CHECKED_SQUARE);
+      textElement.classList.add('lined');
+    }
   }
-  
+};
+
+// The function that saves the tasks' completion states to localStorage
+function saveTaskState() {
+  const taskItemsState = Array.from(listElems).map((elem) => ({
+    id: elem.querySelector('input[name="index"]').value,
+    isCompleted: elem.querySelector('.check').getAttribute('src') === CHECKED_SQUARE,
+  }));
+  localStorage.setItem('taskItemsState', JSON.stringify(taskItemsState));
+};
+ 
+//Handle information when refreshing the page
   handleRefresh();
+  

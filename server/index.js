@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import express from "express";
 import bodyParser from "body-parser";
 import path from "path";
@@ -7,17 +8,19 @@ import mongoose from "mongoose";
 import passport from "passport";
 import session from "express-session";
 import passportLocalMongoose from "passport-local-mongoose";
-
+//configure .env file
+dotenv.config();
 
 //Connecting to the local database
 mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
 
+//----------------middlewares and schemas---------------
 const app = express();
 const port = 3000;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.use(session({
-  secret: "our little secret.",
+  secret: process.env.SECRET_KEY,
   resave: false,
   saveUninitialized: false,
 }));
@@ -25,21 +28,24 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
+//schema for the task items
 const itemsSchema = new mongoose.Schema({
     name: String,
+    //reference the user id
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     }
   });
 
+  //schema for the users
 const userSchema = new mongoose.Schema({
   email: String,
   password: String
 });
 
 userSchema.plugin(passportLocalMongoose)
+
 //create new model for tasks
 const Item = new mongoose.model("Item", itemsSchema);
 const User = new mongoose.model("User", userSchema);
@@ -54,15 +60,19 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, ".." ,"/public")))
 
+
 app.listen(port, (req, res) => {
     console.log(`Server listening port: ${port}`);
 })
+
+//------------------Get routes-----------------
 
 app.get("/", async (req, res) => {
   res.sendFile(path.join(__dirname, "..", "/views", "/main_page.html"));
   });
 
-  app.get("/index", async(req, res) => {
+//If the user is authenticated get the main page, if not return to the welcome page
+app.get("/index", async(req, res) => {
    if(req.isAuthenticated()){
     try {
       const user = req.user;
@@ -74,8 +84,9 @@ app.get("/", async (req, res) => {
     } }  else {
         res.redirect("/");
     }
-  })
+  });
 
+  //Get login or register pages
   app.get("/register", async(req, res) => {
     res.sendFile(path.join(__dirname, "..", "/views", "/register.html"));
   });
@@ -83,7 +94,17 @@ app.get("/", async (req, res) => {
   app.get("/login", async(req, res) => {
     res.sendFile(path.join(__dirname, "..", "/views", "/login.html"));
   });
+
+  //Log out route
+  app.get("/logout", (req, res) => {
+    req.logout(req.user, err => {
+      if(err) return next(err);
+      res.redirect("/");
+    });
+  });
  
+//--------------Post routes--------------------
+
 //route for creating tasks
 app.post("/create-task", async (req, res) => {
  try{ 
@@ -133,6 +154,7 @@ app.post("/update", async (req, res) => {
   } 
 })
 
+//Register request handler
 app.post("/register", function(req, res){
 
   User.register({username: req.body.username}, req.body.password, (err, user) => {
@@ -148,6 +170,7 @@ app.post("/register", function(req, res){
 
 });
 
+//Login request handler
 app.post("/login", function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) {
@@ -155,6 +178,7 @@ app.post("/login", function(req, res, next) {
       return res.redirect('/login');
     }
     if (!user) {
+      //If there is no such user or the password does not match, redirects to the login page
       console.log('There was a mistake in the username or the password');
       return res.redirect('/login');
     }
@@ -168,9 +192,3 @@ app.post("/login", function(req, res, next) {
   })(req, res, next);
 });
 
-app.get("/logout", (req, res) => {
-  req.logout(req.user, err => {
-    if(err) return next(err);
-    res.redirect("/");
-  });
-});
