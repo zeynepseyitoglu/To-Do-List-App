@@ -31,7 +31,7 @@ To run the application locally:
 ## Test cases:
 ### User registration:
 - Register to the app by entering email and password into the corresponding areas.
-- If register successful the main page will render.
+- If register is successful the main page will render.
 - Check database for successfull user creation.
 ### User login:
 - Enter the registered username and the password into the corresponding fields.
@@ -46,6 +46,5 @@ To run the application locally:
 ### Making sure that the timer keeps running when page is refreshed:
 - Start the timer and refresh the page.
 ## Test data: 
-
-
-
+- For registration -> **email:**`forest@abc.com`, **password:**`123`
+- For login -> **email:**`forest@abc.com`, **password:**`123` 
