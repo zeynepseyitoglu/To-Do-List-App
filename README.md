@@ -24,6 +24,7 @@ With its built-in Pomodoro timer, you can set your desired focus and break times
 ## Instructions:
 To run the application locally:
 - clone the repository using `git clone https://github.com/zeynepseyitoglu/To-Do-List-App.git`.
+- Navigate into the project directory using `cd To-Do-List-App`
 - Install dependencies using `npm i`.
 - Start mongo server **mongod** on your device.
 - Navigate into the `server` folder and start the server by running `node index`.
