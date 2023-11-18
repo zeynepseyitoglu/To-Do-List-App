@@ -9,6 +9,8 @@ With its built-in Pomodoro timer, you can set your desired focus and break times
 - Set the timer to the desired minutes.
 - Restore the timer to its default state.
 - Have a little fun treat with the confetti.
+## Screencast
+View the screencast here https://youtu.be/GlGHiYtQ6aQ
 ## Tech Stack
 ### Front-end:
 - HTML: This is the skeleton of the web page.
