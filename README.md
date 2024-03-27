@@ -1,4 +1,4 @@
-# Task Forest-Zeynep's List
+# Task Forest
 This is a project made for module Java and Web Development for IU International University of Applied Sciences.
 ## About the app:
 Task Forest is an easy-to-use, super simple task app.
